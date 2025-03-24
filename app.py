@@ -2,10 +2,10 @@ from flask import Flask, request, jsonify
 import pickle
 import pandas as pd
 import os
-from flask_cors import CORS  # ✅ Handle CORS issues
+from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Allow all origins (useful for Flutter)
+CORS(app)  # Enable CORS for cross-origin requests (e.g., Flutter app)
 
 # Load the trained model and encoder safely
 model_path = "fare_model.pkl"
@@ -17,12 +17,16 @@ if not os.path.exists(model_path) or not os.path.exists(encoder_path):
 model = pickle.load(open(model_path, "rb"))
 encoder = pickle.load(open(encoder_path, "rb"))
 
+# ✅ Add a Home Route to Prevent 404 Errors
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Fare Prediction API is Running!"}), 200
+
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
         # Ensure request is in JSON format
         data = request.get_json()
-
         if not data:
             return jsonify({"error": "Invalid input. JSON required"}), 400
 
@@ -64,5 +68,6 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ✅ Run the Flask app (for local development)
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
